@@ -1,43 +1,44 @@
+const readline = require('readline');
+
 function calculateRankings(scores, gitsScores) {
-    const sortedScores = scores.sort((a, b) => b - a); // Mengurutkan skor dari terbesar ke terkecil
-    const rankings = {};
-  
+  const scoresSet = [...new Set(scores)].sort((a, b) => b - a); // Menghapus elemen duplikat dan mengurutkan skor secara menurun
+  const rankings = {};
+
+  scoresSet.forEach((score, index) => {
+    rankings[score] = index + 1; // Memberikan peringkat ke setiap skor
+  });
+
+  const gitsRankings = [];
+  gitsScores.forEach((gitsScore) => {
     let rank = 1;
-    for (let i = 0; i < sortedScores.length; i++) {
-      const score = sortedScores[i];
-      if (rankings[score] === undefined) {
-        rankings[score] = rank; // Memberikan peringkat ke skor yang unik
-      }
-      if (sortedScores[i] !== sortedScores[i + 1]) {
-        rank++; // Meningkatkan peringkat jika skor berbeda
+    for (let score of scoresSet) {
+      if (gitsScore < score) {
+        rank = rankings[score] + 1; // Mengubah peringkat jika skor GITS lebih rendah dari skor saat ini
+        break;
       }
     }
-  
-    const gitsRankings = [];
-    for (let i = 0; i < gitsScores.length; i++) {
-      const gitsScore = gitsScores[i];
-      let gitsRank = 1;
-      for (let j = 0; j < sortedScores.length; j++) {
-        if (gitsScore < sortedScores[j]) {
-          gitsRank = rankings[sortedScores[j]] + 1; // Mengubah peringkat jika skor GITS lebih rendah
-          break;
-        }
-      }
-      gitsRankings.push(gitsRank);
-    }
-  
-    return gitsRankings;
-  }
-  
-  // Menerima input dari pengguna
-  const numPlayers = parseInt(prompt("Masukkan jumlah pemain:"));
-  const scores = prompt("Masukkan skor pemain (dipisahkan dengan spasi):").split(" ").map(Number);
-  const numGames = parseInt(prompt("Masukkan jumlah permainan GITS:"));
-  const gitsScores = prompt("Masukkan skor GITS (dipisahkan dengan spasi):").split(" ").map(Number);
-  
-  // Memanggil fungsi untuk menghitung peringkat GITS
-  const result = calculateRankings(scores, gitsScores);
-  
-  // Mencetak peringkat GITS
-  console.log("Output:", result.join(" "));
-  
+    gitsRankings.push(rank);
+  });
+
+  return gitsRankings;
+}
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+rl.question('Masukkan jumlah pemain: ', (numPlayers) => {
+  rl.question('Masukkan skor pemain (dipisahkan dengan spasi): ', (scoresInput) => {
+    const scores = scoresInput.split(" ").map(Number);
+    rl.question('Masukkan jumlah permainan GITS: ', (numGames) => {
+      rl.question('Masukkan skor GITS (dipisahkan dengan spasi): ', (gitsScoresInput) => {
+        const gitsScores = gitsScoresInput.split(" ").map(Number);
+        rl.close();
+
+        const result = calculateRankings(scores, gitsScores);
+        console.log("Output:", result.join(" "));
+      });
+    });
+  });
+});
